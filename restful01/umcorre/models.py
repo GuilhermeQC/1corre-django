@@ -1,7 +1,6 @@
 from django.db import models
  
 class Endereco(models.Model): #Relação OneToOne // Uma pessoa só pode ter um endereço
-    #ID
     cep = models.CharField(max_length=8, blank=False) #CEP
     road = models.CharField(max_length=100, blank=False) #Rua/ Avenida
     number = models.CharField(max_length=6, null=True) #Número
@@ -13,7 +12,6 @@ class Endereco(models.Model): #Relação OneToOne // Uma pessoa só pode ter um 
         ordering =['city'] #Returna dados organizados pela cidade em ordem crescente
 
 class Telefone(models.Model): #Relação OneToOne // Uma pessoa só pode ter um endereço
-    #ID
     tel = models.CharField(max_length=11, blank=False) #telefone
 
 class Pessoa(models.Model):
@@ -39,9 +37,49 @@ class Pessoa(models.Model):
         ordering = ['first_name', 'sec_name', 'last_name']
     
 class Cliente(models.Model):
-    #ID
+    pessoa_id = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
+    class Meta:
+        ordering = ['pessoa_id.first_name'] # Não sei se isso funciona, teria que testar
+
+class Freelancer(models.Model):    
     pessoa_id = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
 
-class Freelancer(models.Model):
-    #ID
-    pessoa_id = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
+class Area(models.Model):
+    name = models.CharField(max_length=100, blank=False)
+    class Meta:
+        ordering = ['name']
+
+class Servico(models.Model):
+    name = models.CharField(max_length=120, blank=False)
+    area = models.ForeignKey(Area, on_delete=models.CASCADE)
+    class Meta:
+        ordering = ['name']
+
+class Oferta(models.Model):
+    freelancer = models.ForeignKey(Freelancer, on_delete=models.CASCADE)
+    service = models.ForeignKey(Servico, on_delete=models.CASCADE)
+    description = models.TextField(max_length=300, blank=False)
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+
+# class Amostra(models.Model): ### Amostra? Acho que isso ficou desatualizado da nossa primeira ideia
+#     pass
+
+class Situacao(models.Model):
+    EA = "Em andamento"
+    Choices = {
+        "NC": "Não concluido",
+        "EA": "Em andamento",
+        "CD": "Concluido",
+    }
+    situation = models.CharField(max_length=2, choices=Choices, default=EA)
+
+class Acordo(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE)
+    final_price = models.DecimalField(max_digits=5, decimal_places=2)
+    description = models.TextField(max_length=300, blank=False)
+    situation = models.ForeignKey(Situacao, on_delete=models.CASCADE)
+   #modality = models.CharField() # // Falta adicionar esse atributo, seja lá oq ele signifique
+
+
+### FALTA CONCLUIR MAIS 3 TABELAS
